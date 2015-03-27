@@ -19,5 +19,9 @@
 		<artifactId>easymock</artifactId>
 		<version>3.3</version>
 	</dependency>
+<<<<<<< HEAD
+    
+=======
+>>>>>>> DemandPaging/master
   </dependencies>
 </project>

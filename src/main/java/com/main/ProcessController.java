@@ -96,6 +96,7 @@ public class ProcessController {
 		{
 			//Set into memory AND page table
 			//****'done, draw to graphics' 
+			reference.set();
 			
 			return false;
 		}
