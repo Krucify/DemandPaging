@@ -6,5 +6,6 @@ public class Main {
 		
 		GraphicController graphController = new GraphicController();
 		ProcessController procController = new ProcessController(graphController);
+		procController.work();
 	}
 }

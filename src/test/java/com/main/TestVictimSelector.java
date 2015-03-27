@@ -14,21 +14,21 @@ public class TestVictimSelector {
 		VictimSelector vs = new VictimSelector(mockGraphic, pageTbl);
 	}
 	
-	@Test(expected=RuntimeException.class)
+	@Test()
 	public void findVictem()
 	{
-		throw new RuntimeException("boopadoop");
+		throw new RuntimeException();
 	}
 	
-	@Test(expected=RuntimeException.class)
+	@Test()
 	public void testAddToQueue()
 	{
-		throw new RuntimeException("boopadoop");
+		throw new RuntimeException();
 	}
 	
-	@Test(expected=RuntimeException.class)
+	@Test()
 	public void testSecondChance()
 	{
-		throw new RuntimeException("boopadoop");
+		throw new RuntimeException();
 	}
 }
