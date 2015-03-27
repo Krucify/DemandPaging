@@ -8,9 +8,10 @@ import com.utility.*;
 public class ProcessController {
 
 	private GraphicController graphics;
-	private VictimSelector victem;
+	private VictimSelector victim;
 	private Frame[] mainMem;
 	private Frame[] virtMem;
+	private boolean memFilled;
 	private Page[][] pageTbl;
 	private List<Proc> processes;
 	private float delay; 
@@ -29,9 +30,10 @@ public class ProcessController {
 	public void setup()
 	{
 		this.graphics = new GraphicController();
-		this.victem = new VictimSelector(graphics, pageTbl);
+		this.victim = new VictimSelector(graphics, pageTbl);
 		this.mainMem = new Frame[30];
 		this.virtMem = new Frame[500];
+		this.memFilled = false;
 		this.processes = new ArrayList<Proc>();
 		
 		for(int i = 1; i <= 5; i++)
@@ -129,7 +131,7 @@ public class ProcessController {
 		Frame dem, vic;
 		
 		//PAGE FAULT
-		vicPage = victem.findVictem();
+		vicPage = victim.findVictim();
 		int mainMemLoc, virtMemLoc;
 		
 		mainMemLoc = vicPage.getMemIndex();
@@ -143,5 +145,74 @@ public class ProcessController {
 		//draw all of this
 		
 		return demPage;
+	}
+	
+	public void memorySwap(Page demanded, Page victem)
+	{
+		
+	}
+	
+	public void addToMainMem(Frame frame, int index)
+	{
+		if(mainMem[index] != null)
+			throw new IllegalStateException("Attempting to overwrite main memory.");
+		else
+			mainMem[index] = frame;
+	}
+	
+	public void addToVirtMem(Frame frame, int index)
+	{
+		if(virtMem[index] != null)
+			throw new IllegalStateException("Attempting to overwrite virtual memory.");
+		else
+			virtMem[index] = frame;
+	}
+	
+	public boolean isMainMemoryFull()
+	{
+		if(memFilled)
+			return true;
+		
+		for(int i = 0; i < mainMem.length; i++)
+		{
+			if(mainMem[i] == null)
+				return false;
+		}
+		
+		memFilled = true;
+		return true;
+	}
+	
+	public boolean isVirtMemoryFull()
+	{
+		for(int i = 0; i < virtMem.length; i++)
+		{
+			if(virtMem[i] == null)
+				return false;
+		}
+		
+		return true;
+	}
+	
+	public int getVirtSlot()
+	{
+		for(int i = 0; i < virtMem.length; i++)
+		{
+			if(virtMem[i] == null)
+				return i;
+		}
+		
+		return -1;
+	}
+	
+	public int getMainSlot()
+	{
+		for(int i = 0; i < mainMem.length; i++)
+		{
+			if(mainMem[i] == null)
+				return i;
+		}
+		
+		return -1;
 	}
 }
