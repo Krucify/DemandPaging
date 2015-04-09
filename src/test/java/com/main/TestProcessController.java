@@ -127,7 +127,7 @@ public class TestProcessController {
 		
 		for(int i = 0; i < 30; i++)
 		{
-			pc.addToMainMem(new Frame(), i);
+			pc.addToMainMem(new Frame(4), i);
 		}
 		
 		boolean testFull = pc.isMainMemoryFull();
@@ -140,7 +140,7 @@ public class TestProcessController {
 		
 		for(int i = 0; i < 500; i++)
 		{
-			pc.addToVirtMem(new Frame(), i);
+			pc.addToVirtMem(new Frame(4), i);
 		}
 		
 		assertTrue(pc.isVirtMemoryFull());

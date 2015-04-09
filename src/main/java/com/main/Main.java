@@ -6,6 +6,11 @@ public class Main {
 		
 		GraphicController graphController = new GraphicController();
 		ProcessController procController = new ProcessController(graphController);
-		procController.work();
+		try {
+			procController.work();
+		} catch (InterruptedException e) {
+			System.err.println("FATALITY: error in delay.");
+			e.printStackTrace();
+		}
 	}
 }

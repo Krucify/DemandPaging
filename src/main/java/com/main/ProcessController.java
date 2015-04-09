@@ -1,7 +1,13 @@
 package com.main;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import com.utility.*;
 
@@ -15,6 +21,7 @@ public class ProcessController {
 	private Page[][] pageTbl;
 	private List<Proc> processes;
 	private float delay; 
+	private Map<Page, Integer> TLB;
 	
 	public ProcessController()
 	{
@@ -35,41 +42,72 @@ public class ProcessController {
 		this.virtMem = new Frame[500];
 		this.memFilled = false;
 		this.processes = new ArrayList<Proc>();
+		this.pageTbl = new Page[5][10];
+		this.TLB = new HashMap<Page, Integer>();
+		this.delay = 1;
 		
-		for(int i = 1; i <= 5; i++)
+		for(int i = 0; i < 5; i++)
 		{
 			Proc temp = new Proc(i);
 			processes.add(temp);
 		}
 	}
 	
-	public void work()
+	public void work() throws InterruptedException
 	{
 		Proc process;
 		Reference reference;
 		Page demPage;
 		
-		while(true)
+		while(true)																		//Work infinitely
 		{
-			process = getProcess();
-			reference = getReference(process);
+			process = getProcess();														//Get random process
+			reference = getReference(process);											//Get random reference
+			System.out.println("Got reference: " + reference.getTblIndex() + "-" + reference.getPageIndex());
 			
-			if(setReference(reference))
+			if(setReference(reference))													//Test if reference is set, if not, set
 			{
-				demPage = pageTbl[reference.getTblIndex()][reference.getPageIndex()];
+				demPage = pageTbl[reference.getTblIndex()][reference.getPageIndex()];	//Get page for reasons
 				
-				if(scanTLB(demPage))
+				if(TLB.containsKey(demPage))											//Is page in TLB?
 				{
-					//page is in tlb, skip straight to memory
-					//draw
+					System.out.println("Scanning TLB");
+					Thread.sleep((long)(200 * delay));
+					if(scanTLB(demPage)) //scanning needs to take time					//Scan TLB, takes time
+					{
+						System.out.println("Found in TLB");
+						//Need to draw
+					} else
+					{
+						System.out.println("Not in TLB, accessing Page Table");
+						Thread.sleep((long)(500 * delay));
+						System.out.println("Got page.");
+					}
+					TLB.put(demPage, TLB.get(demPage) + 1);								//Increment usage
+				}
+				else
+					TLB.put(demPage, 1);												//Otherwise, place
+					
+				if(isPageFault(demPage))												//Is page in virt mem?
+				{	
+					System.out.println("Page is invalid: Page fault.");
+					resolvePageFault(demPage);											//Resolve fault. Takes time
+					Thread.sleep((long)(1000 * delay));
+					System.out.println("Victim page found. Fault resolved.");
 				}
 				
-				if(isPageFault(demPage))
-					resolvePageFault(demPage);
-				
+				System.out.println("Accessing Memory");
+				Thread.sleep((long)(500 * delay));
+				demPage.setDirty(true);													//Set page dirty
+				victim.addToQueue(demPage);												//Set page into current page queue
 				//Draw page in page table
 				//Get from memory, draw in memory
 				Frame frame = mainMem[demPage.getMemIndex()];
+				System.out.println("Reference Value: " + reference.getValue() + "; Frame Value: " + frame.getValue());
+			} else
+			{
+				System.err.println("VIRTUAL MEMORY FULL.");
+				System.exit(0);
 			}
 		}
 	}
@@ -81,8 +119,11 @@ public class ProcessController {
 	
 	public Proc getProcess()
 	{
-		Proc dummy = new Proc(4);
-		return dummy;
+		Random rn = new Random();
+		rn.setSeed(rn.nextLong());
+		int rand = rn.nextInt(processes.size());
+		Proc process = processes.get(rand);
+		return process;
 	}
 	
 	public Reference getReference(Proc process)
@@ -94,11 +135,39 @@ public class ProcessController {
 	{
 		if(!reference.isSet())
 		{
+			int memIndex;
+			Frame frame;
+			Page page;
+			
+			if(!isMainMemoryFull())
+			{
+				memIndex = getMainSlot();
+				frame = new Frame(reference.getValue());
+				mainMem[memIndex] = frame;
+				
+				page = new Page(memIndex, false);
+				pageTbl[reference.getTblIndex()][reference.getPageIndex()] = page;
+				
+				reference.set();
+				System.out.println("Reference set");
+				return true;
+			} else
+			{
+				if(isVirtMemoryFull())
+					return false;
+				
+				memIndex = getVirtSlot();
+				frame = new Frame(reference.getValue());
+				virtMem[memIndex] = frame;
+				
+				page = new Page(memIndex, true);
+				pageTbl[reference.getTblIndex()][reference.getPageIndex()] = page;
+				
+				reference.set();
+				return true;
+			}
 			//Set into memory AND page table
 			//****'done, draw to graphics' 
-			reference.set();
-			
-			return false;
 		}
 		
 		return true;
@@ -106,13 +175,18 @@ public class ProcessController {
 	
 	public boolean scanTLB(Page page)
 	{
-		for(Page tlbPage : pageTbl[0])
+		MapUtil mapper = new MapUtil();
+		
+		Map<Page, Integer> sortedMap = mapper.sortByValue(TLB);
+		
+		int i = 0;
+		for(Entry<Page, Integer> entry : sortedMap.entrySet())
 		{
-			//more drawing
-			if(tlbPage == page && page.isValid())
-			{
+			if(page == entry.getKey())
 				return true;
-			}
+			
+			if(++i > 5)
+				break;
 		}
 		
 		return false;
@@ -132,25 +206,30 @@ public class ProcessController {
 		Frame dem, vic;
 		
 		//PAGE FAULT
-		vicPage = victim.findVictim();
+		vicPage = victim.findVictim();		//Gets victim from vicSelector
 		int mainMemLoc, virtMemLoc;
 		
-		mainMemLoc = vicPage.getMemIndex();
+		mainMemLoc = vicPage.getMemIndex();	//Gets memory indexes for swap
 		virtMemLoc = demPage.getMemIndex();
 		
-		dem = virtMem[virtMemLoc];
+		dem = virtMem[virtMemLoc];			//Get frames before swap
 		vic = mainMem[mainMemLoc];
 		
-		mainMem[mainMemLoc] = dem;
+		mainMem[mainMemLoc] = dem;			//Swap frames
 		virtMem[virtMemLoc] = vic;
 		//draw all of this
 		
-		return demPage;
-	}
-	
-	public void memorySwap(Page demanded, Page victem)
-	{
+		vicPage.setDirty(false);			//Adjust page values.
+		vicPage.setValid(false);
+		vicPage.setMemIndex(virtMemLoc);
 		
+		demPage.setDirty(true);
+		demPage.setValid(true);
+		demPage.setMemIndex(mainMemLoc);
+		
+		victim.removeFromQueue(vicPage);
+		
+		return demPage;						//Return page
 	}
 	
 	public void addToMainMem(Frame frame, int index)

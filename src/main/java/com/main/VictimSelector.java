@@ -1,6 +1,6 @@
 package com.main;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import com.utility.Page;
@@ -14,7 +14,7 @@ public class VictimSelector {
 	{
 		this.graphics = graphics;
 		this.pageTbl = table;
-		pageQueue = new ArrayList<Page>();
+		this.pageQueue = new LinkedList<Page>();
 	}
 	
 	public Page findVictim()
@@ -51,7 +51,7 @@ public class VictimSelector {
 	
 	public Page secondChance()
 	{
-		Page victem = null;
+		Page victim = null;
 		boolean vicFound = false;
 		
 		for(Page page : pageQueue) //Scan through all pages.
@@ -60,7 +60,7 @@ public class VictimSelector {
 				page.setDirty(false);
 			else if(!vicFound)			//Otherwise if victem is not found, set victem
 			{
-				victem = page;
+				victim = page;
 				vicFound = true;
 			}
 		}
@@ -70,10 +70,10 @@ public class VictimSelector {
 				throw new RuntimeException("Second Chance: Cannot resolve fault when page queue is empty.");
 			else
 			{
-				victem = pageQueue.get(0);
+				victim = pageQueue.get(0);
 			}
 		}
 		
-		return victem;
+		return victim;
 	}
 }

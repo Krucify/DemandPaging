@@ -24,7 +24,7 @@ public class TestVictimSelector {
 	@Test
 	public void testAddToQueue()
 	{
-		Page dummy = new Page(12);
+		Page dummy = new Page(12, false);
 		vs.addToQueue(dummy);
 		assertTrue("Page is added to queue: ",vs.isInQueue(dummy));
 	}
@@ -32,7 +32,7 @@ public class TestVictimSelector {
 	@Test
 	public void testRemoveFromQueue()
 	{
-		Page dummy = new Page(12);
+		Page dummy = new Page(12, false);
 		vs.addToQueue(dummy);
 		assertTrue("Page is added to queue: ",vs.isInQueue(dummy));
 		vs.removeFromQueue(dummy);

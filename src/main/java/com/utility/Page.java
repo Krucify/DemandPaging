@@ -6,10 +6,21 @@ public class Page {
 	private int memIndex;
 	private int size;
 	
-	public Page(int size)
+	public Page(int memIndex, boolean fault)
 	{
-		this.size = size;
+		this.memIndex = memIndex;
+		
+		if(!fault)
+		{
+			this.valid = true;
+			this.dirty = true;
+		} else
+		{
+			this.valid = false;
+			this.dirty = false;
+		}
 	}
+	
 	
 	public boolean isDirty() {
 		return dirty;
