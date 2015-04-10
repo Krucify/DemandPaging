@@ -102,7 +102,7 @@ public class ProcessController {
 				victim.addToQueue(demPage);												//Set page into current page queue
 				//Draw page in page table
 				//Get from memory, draw in memory
-				Frame frame = mainMem[demPage.getMemIndex()];
+				Frame frame = getFromMain(demPage.getMemIndex());
 				System.out.println("Reference Value: " + reference.getValue() + "; Frame Value: " + frame.getValue());
 			} else
 			{
@@ -294,5 +294,21 @@ public class ProcessController {
 		}
 		
 		return -1;
+	}
+	
+	public Frame getFromMain(int index)
+	{
+		if(mainMem[index] == null)
+			throw new RuntimeException("Attempting to access null memory from Main.");
+		
+		return mainMem[index];
+	}
+	
+	public Frame getFromVirt(int index)
+	{
+		if(virtMem[index] == null)
+			throw new RuntimeException("Attempting to access null memory from Virt.");		
+		
+		return virtMem[index];
 	}
 }

@@ -18,6 +18,7 @@ public class TestProcessController {
 	private ProcessController pc;
 	private Proc p;
 	private Reference ref;
+	private Frame frame;
 	private int id;
 	private int value;
 	
@@ -31,12 +32,7 @@ public class TestProcessController {
 		this.pc = new ProcessController();
 		this.p = createMock("SampleProcess", Proc.class);
 		this.ref = createMock("SampleReference", Reference.class);
-	}
-	
-	@Test
-	public void testSomething()
-	{
-		throw new RuntimeException();
+		this.frame = createMock("SampleFrame", Frame.class);
 	}
 	
 	@Test
@@ -134,6 +130,7 @@ public class TestProcessController {
 		assertTrue(testFull);
 	}
 	
+	@Test
 	public void testIsVirtMemoryFull()
 	{
 		assertFalse(pc.isVirtMemoryFull());
@@ -144,5 +141,95 @@ public class TestProcessController {
 		}
 		
 		assertTrue(pc.isVirtMemoryFull());
+	}
+	
+	@Test
+	public void testGetMainMemSlot()
+	{
+		int index = pc.getMainSlot();
+		
+		assertFalse(index == -1);
+	}
+	
+	@Test
+	public void testGetMainMemSlotWhenFull()
+	{
+		for(int i = 0; i < 30; i++)
+		{
+			pc.addToMainMem(new Frame(4), i);
+		}
+		
+		int index = pc.getMainSlot();
+		
+		assertTrue(index == -1);
+	}
+	
+	@Test
+	public void testGetVirtMemSlot()
+	{
+		int index = pc.getVirtSlot();
+		
+		assertFalse(index == -1);
+	}
+	
+	@Test
+	public void testGetVirtMemSlotWhenFull()
+	{
+		for(int i = 0; i < 500; i++)
+		{
+			pc.addToVirtMem(new Frame(4), i);
+		}
+		
+		int index = pc.getVirtSlot();
+		
+		assertTrue(index == -1);
+	}
+	
+	@Test
+	public void testAddToAndGetMainMem()
+	{
+		pc.addToMainMem(frame, 0);
+		Frame test = pc.getFromMain(0);
+		
+		assertSame(frame, test);
+	}
+	
+	@Test(expected=RuntimeException.class)
+	public void testAddToMainMemOverwrite()
+	{
+		Frame dummy = new Frame(4);
+		pc.addToMainMem(dummy, 0);
+		pc.addToMainMem(frame, 0);
+	}
+	
+	@Test
+	public void testAddToAndGetVirtMem()
+	{
+		pc.addToVirtMem(frame, 0);
+		Frame test = pc.getFromVirt(0);
+		
+		assertSame(frame, test);
+	}
+	
+	@Test(expected=RuntimeException.class)
+	public void testAddToVirtMemOverwrite()
+	{
+		Frame dummy = new Frame(4);
+		pc.addToVirtMem(dummy, 0);
+		pc.addToVirtMem(frame, 0);
+	}
+	
+	
+	@Test(expected=RuntimeException.class)
+	public void testGetFromMainError()
+	{
+		pc.getFromMain(0);
+	}
+	
+	
+	@Test(expected=RuntimeException.class)
+	public void testGetFromVirtError()
+	{
+		pc.getFromVirt(0);
 	}
 }
