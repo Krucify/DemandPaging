@@ -36,7 +36,6 @@ public class ProcessController {
 	
 	public void setup()
 	{
-		this.graphics = new GraphicController();
 		this.victim = new VictimSelector(graphics, pageTbl);
 		this.mainMem = new Frame[30];
 		this.virtMem = new Frame[500];
