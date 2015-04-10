@@ -15,6 +15,10 @@ import javax.swing.event.*;
 
 public class GraphicController extends JApplet implements ChangeListener {
 	
+	public GraphicController() { }
+	
+	public void stateChanged(ChangeEvent e) { }
+	/*
 	Painter painter;
 	
 	public GraphicController()
@@ -211,5 +215,5 @@ class Painter extends Component {
         int yTextCond = rY-(int)boundsCond.getY() + (int)boundsTemp.getHeight();
         g.drawString(condStr, xTextCond, yTextCond);
         
-    }
+    }*/
 }
