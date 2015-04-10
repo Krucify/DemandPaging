@@ -36,7 +36,6 @@ public class ProcessController {
 	
 	public void setup()
 	{
-		this.graphics = new GraphicController();
 		this.victim = new VictimSelector(graphics, pageTbl);
 		this.mainMem = new Frame[30];
 		this.virtMem = new Frame[500];
@@ -294,5 +293,21 @@ public class ProcessController {
 		}
 		
 		return -1;
+	}
+	
+	public Frame getFromMain(int index) {
+		if (mainMem[index] == null)
+			throw new RuntimeException(
+					"Attempting to access null memory from Main.");
+
+		return mainMem[index];
+	}
+
+	public Frame getFromVirt(int index) {
+		if (virtMem[index] == null)
+			throw new RuntimeException(
+					"Attempting to access null memory from Virt.");
+
+		return virtMem[index];
 	}
 }

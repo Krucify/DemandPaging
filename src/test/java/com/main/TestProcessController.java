@@ -33,16 +33,12 @@ public class TestProcessController {
 		this.ref = createMock("SampleReference", Reference.class);
 	}
 	
-	@Test
-	public void testSomething()
-	{
-		throw new RuntimeException();
-	}
 	
 	@Test
 	public void testGetProcess()
 	{
-		throw new RuntimeException();
+		Proc testProc = pc.getProcess();
+		assertSame(Proc.class, testProc.getClass());
 	}
 	
 	@Test
@@ -57,14 +53,100 @@ public class TestProcessController {
 	}
 	
 	@Test
-	public void testSetReference()
+	public void testSetReferenceNotSetMainMemNotFull()
 	{
 		expect(ref.isSet()).andReturn(false);
+		expect(ref.getValue()).andStubReturn(1);;
+		expect(ref.getTblIndex()).andStubReturn(1);	
+		expect(ref.getPageIndex()).andStubReturn(1);
+		
 		ref.set();
 		expectLastCall();
 		replay(ref);
+		
+		Boolean shouldNotBeFull = pc.isMainMemoryFull();
 		Boolean result = pc.setReference(ref);
-		assertSame(ref.set, result);
+		
+		assertTrue(result);
+		assertFalse(shouldNotBeFull);
+		
+		verify(ref);
+		ref = null;
+	}
+	
+	@Test
+	public void testSetReferenceNotSetMainMemFull()
+	{
+		// Fill Main Memory
+		for(int i = 0; i < 30; i++)
+		{
+			pc.addToMainMem(new Frame(4), i);
+		}
+		
+		// Setup Mock calls
+		expect(ref.isSet()).andReturn(false);
+		expect(ref.getValue()).andStubReturn(1);;
+		expect(ref.getTblIndex()).andStubReturn(1);	
+		expect(ref.getPageIndex()).andStubReturn(1);
+		
+		ref.set();
+		expectLastCall();
+		replay(ref);
+		
+		Boolean shouldBeFull = pc.isMainMemoryFull();
+		Boolean result = pc.setReference(ref);
+		
+		assertTrue(result);
+		assertTrue(shouldBeFull);
+		
+		verify(ref);
+		ref = null;
+	}
+	
+	@Test
+	public void testSetReferenceNotSetMainAndVirtFull()
+	{
+		// Fill Main Memory
+		for(int i = 0; i < 30; i++)
+		{
+			pc.addToMainMem(new Frame(4), i);
+		}
+		// Fill Virt Mem
+		for(int i = 0; i < 500; i++)
+		{
+			pc.addToVirtMem(new Frame(4), i);
+		}
+		
+		// Setup Mock calls
+		expect(ref.isSet()).andReturn(false);
+		expect(ref.getValue()).andStubReturn(1);;
+		expect(ref.getTblIndex()).andStubReturn(1);	
+		expect(ref.getPageIndex()).andStubReturn(1);
+		
+		replay(ref);
+		
+		Boolean shouldBeFull = pc.isMainMemoryFull();
+		Boolean shouldIsFull = pc.isVirtMemoryFull();
+		Boolean result = pc.setReference(ref);
+		
+		assertFalse(result);
+		assertTrue(shouldBeFull);
+		assertTrue(shouldIsFull);
+		
+		verify(ref);
+		ref = null;
+	}
+	
+	@Test
+	public void testSetReferenceAlreadySet()
+	{
+		expect(ref.isSet()).andReturn(true);
+		replay(ref);
+		
+		Boolean result = pc.setReference(ref);
+		
+		assertTrue(result);
+		
 		verify(ref);
 		ref = null;
 	}
