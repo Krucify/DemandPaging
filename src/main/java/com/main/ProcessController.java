@@ -31,6 +31,7 @@ public class ProcessController {
 	public ProcessController(GraphicController graphics)
 	{
 		this.graphics = graphics;
+		graphics.setVisible(true);
 		setup();
 	}
 	
@@ -60,9 +61,13 @@ public class ProcessController {
 		
 		while(true)																		//Work infinitely
 		{
+			//set delay
+			setDelay(graphics.getDelaySlider());
+			
 			process = getProcess();														//Get random process
 			reference = getReference(process);											//Get random reference
 			System.out.println("Got reference: " + reference.getTblIndex() + "-" + reference.getPageIndex());
+			graphics.setProcessInfo("Got reference: " + reference.getTblIndex() + "-" + reference.getPageIndex());
 			
 			if(setReference(reference))													//Test if reference is set, if not, set
 			{
@@ -102,7 +107,7 @@ public class ProcessController {
 				//Draw page in page table
 				//Get from memory, draw in memory
 				Frame frame = getFromMain(demPage.getMemIndex());
-				System.out.println("Reference Value: " + reference.getValue() + "; Frame Value: " + frame.getValue());
+				System.out.println("Reference Value: " + reference.getValue() + "; Frame Value: " + frame.getValue() + "\n");
 			} else
 			{
 				System.err.println("VIRTUAL MEMORY FULL.");
@@ -113,7 +118,10 @@ public class ProcessController {
 	
 	public void setDelay(float delay)
 	{
-		this.delay = delay;
+		if (delay==0)
+			delay = 1;
+		
+		this.delay = (1/delay)*50;
 	}
 	
 	public Proc getProcess()
