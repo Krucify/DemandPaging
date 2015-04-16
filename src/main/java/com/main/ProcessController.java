@@ -33,6 +33,7 @@ public class ProcessController {
 		this.graphics = graphics;
 		graphics.setVisible(true);
 		setup();
+		graphics.invokeUpdatePageTable(pageTbl);
 	}
 	
 	public void setup()
@@ -61,31 +62,35 @@ public class ProcessController {
 		
 		while(true)																		//Work infinitely
 		{
-			//set delay
-			setDelay(graphics.getDelaySlider());
+			setDelay(graphics.getDelaySlider());										//Set delay
 			
 			process = getProcess();														//Get random process
 			reference = getReference(process);											//Get random reference
-			System.out.println("Got reference: " + reference.getTblIndex() + "-" + reference.getPageIndex());
-			graphics.setProcessInfo("Got reference: " + reference.getTblIndex() + "-" + reference.getPageIndex());
+			
+			System.out.println("Got Process: " + process.getId());
+			graphics.setProcessInfo("Process: " + process.getId());
+			System.out.println("Got Process' reference in Table:  " + reference.getTblIndex() + "; Page: " + reference.getPageIndex());
+			graphics.setReferencePane(String.valueOf(reference.getTblIndex()) + '-' + String.valueOf(reference.getPageIndex()));
+			//graphics.setProcessInfo("Got reference: " + reference.getTblIndex() + "-" + reference.getPageIndex());
 			
 			if(setReference(reference))													//Test if reference is set, if not, set
 			{
-				demPage = pageTbl[reference.getTblIndex()][reference.getPageIndex()];	//Get page for reasons
+				demPage = pageTbl[reference.getTblIndex()][reference.getPageIndex()];	//Get page for TLB referencing
+				
 				
 				if(TLB.containsKey(demPage))											//Is page in TLB?
 				{
-					System.out.println("Scanning TLB");
+					System.out.println("Scanning TLB for page.");
 					Thread.sleep((long)(200 * delay));
 					if(scanTLB(demPage)) //scanning needs to take time					//Scan TLB, takes time
 					{
-						System.out.println("Found in TLB");
+						System.out.println("Found page in TLB");
 						//Need to draw
 					} else
 					{
 						System.out.println("Not in TLB, accessing Page Table");
 						Thread.sleep((long)(500 * delay));
-						System.out.println("Got page.");
+						System.out.println("Got page: " + demPage.getMemIndex());
 					}
 					TLB.put(demPage, TLB.get(demPage) + 1);								//Increment usage
 				}
@@ -94,13 +99,13 @@ public class ProcessController {
 					
 				if(isPageFault(demPage))												//Is page in virt mem?
 				{	
-					System.out.println("Page is invalid: Page fault.");
+					System.out.println("Page is invalid: Fault for Page: " + demPage.getMemIndex());
 					resolvePageFault(demPage);											//Resolve fault. Takes time
 					Thread.sleep((long)(1000 * delay));
-					System.out.println("Victim page found. Fault resolved.");
+					System.out.println("Victim page found. Fault resolved for Page: " + demPage.getMemIndex());
 				}
 				
-				System.out.println("Accessing Memory");
+				System.out.println("Accessing Memory for reference's value.");
 				Thread.sleep((long)(500 * delay));
 				demPage.setDirty(true);													//Set page dirty
 				victim.addToQueue(demPage);												//Set page into current page queue
@@ -108,6 +113,8 @@ public class ProcessController {
 				//Get from memory, draw in memory
 				Frame frame = getFromMain(demPage.getMemIndex());
 				System.out.println("Reference Value: " + reference.getValue() + "; Frame Value: " + frame.getValue() + "\n");
+				graphics.invokeUpdatePageTable(pageTbl);								//GUI: Update Page Table
+				graphics.setReferencePane(String.valueOf(frame.getValue()));
 			} else
 			{
 				System.err.println("VIRTUAL MEMORY FULL.");
@@ -156,7 +163,8 @@ public class ProcessController {
 				pageTbl[reference.getTblIndex()][reference.getPageIndex()] = page;
 				
 				reference.set();
-				System.out.println("Reference set");
+				System.out.println("Reference set in main memory. Index: " + memIndex);
+				graphics.invokeUpdateMainMemory(mainMem);
 				return true;
 			} else
 			{
@@ -171,11 +179,15 @@ public class ProcessController {
 				pageTbl[reference.getTblIndex()][reference.getPageIndex()] = page;
 				
 				reference.set();
+				System.out.println("Reference set in virtual memory. Index:" + memIndex);
+				graphics.invokeUpdateVirtualMemory(virtMem);
 				return true;
 			}
 			//Set into memory AND page table
-			//****'done, draw to graphics' 
+			//****'done, draw to graphics
+			 
 		}
+		System.out.println("Reference is already set in memory.");
 		
 		return true;
 	}
@@ -185,12 +197,15 @@ public class ProcessController {
 		MapUtil mapper = new MapUtil();
 		
 		Map<Page, Integer> sortedMap = mapper.sortByValue(TLB);
-		
+
 		int i = 0;
 		for(Entry<Page, Integer> entry : sortedMap.entrySet())
 		{
-			if(page == entry.getKey())
+			if(page == entry.getKey()) {
+				//draw this ordered TLB to graphics
+				graphics.invokeUpdateTLB(entry.getKey().getMemIndex(), i);
 				return true;
+			}
 			
 			if(++i > 5)
 				break;

@@ -47,6 +47,7 @@ public class VictimSelector {
 	{
 		if(isInQueue(page))
 			pageQueue.remove(page);
+		graphics.invokeUpdateVictimQueue(pageQueue.toArray(new Page[pageQueue.size()]));
 	}
 	
 	public Page secondChance()
