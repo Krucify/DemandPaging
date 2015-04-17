@@ -76,7 +76,7 @@ public class ProcessController {
 			if(setReference(reference))													//Test if reference is set, if not, set
 			{
 				demPage = pageTbl[reference.getTblIndex()][reference.getPageIndex()];	//Get page for TLB referencing
-				
+				graphics.invokeUpdatePageTable(pageTbl);								//GUI: Update Page Table
 				
 				if(TLB.containsKey(demPage))											//Is page in TLB?
 				{
@@ -113,7 +113,7 @@ public class ProcessController {
 				//Get from memory, draw in memory
 				Frame frame = getFromMain(demPage.getMemIndex());
 				System.out.println("Reference Value: " + reference.getValue() + "; Frame Value: " + frame.getValue() + "\n");
-				graphics.invokeUpdatePageTable(pageTbl);								//GUI: Update Page Table
+
 				graphics.setReferencePane(String.valueOf(frame.getValue()));
 			} else
 			{
@@ -197,13 +197,13 @@ public class ProcessController {
 		MapUtil mapper = new MapUtil();
 		
 		Map<Page, Integer> sortedMap = mapper.sortByValue(TLB);
+		graphics.invokeUpdateTLB(sortedMap.keySet().toArray(new Page[5]));
 
 		int i = 0;
 		for(Entry<Page, Integer> entry : sortedMap.entrySet())
 		{
 			if(page == entry.getKey()) {
 				//draw this ordered TLB to graphics
-				graphics.invokeUpdateTLB(entry.getKey().getMemIndex(), i);
 				return true;
 			}
 			

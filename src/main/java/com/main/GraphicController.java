@@ -2,6 +2,7 @@ package com.main;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.util.HashMap;
@@ -10,6 +11,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
+import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -19,6 +21,8 @@ import javax.swing.JTable;
 import javax.swing.JTextPane;
 import javax.swing.WindowConstants;
 import javax.swing.border.BevelBorder;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.SwingUtilities;
@@ -106,7 +110,7 @@ public class GraphicController extends javax.swing.JFrame {
 					TableModel mainMemoryModel = 
 							new DefaultTableModel(
 									rows,
-									new String[] { "Column 1"});
+									new String[] { "Main"});
 					mainMemory = new JTable();
 					
 					backdropPane.add(mainMemory, JLayeredPane.DEFAULT_LAYER);
@@ -114,6 +118,7 @@ public class GraphicController extends javax.swing.JFrame {
 					mainMemory.setRowHeight(16);
 					mainMemory.setBounds(614, 25, 75, 480);
 					mainMemory.setToolTipText("This is the Main Memory");
+					mainMemory.setEnabled(false);
 				}
 				{
 					// Virtual Memory Table
@@ -133,6 +138,7 @@ public class GraphicController extends javax.swing.JFrame {
 						virtualMemory.setRowHeight(16);
 						//virtualMemory.setBounds(100, 25, 75, 11*30);
 						virtualMemory.setToolTipText("This is the Virtual Memory");
+						virtualMemory.setEnabled(false);
 					}
 				}
 				{
@@ -141,12 +147,13 @@ public class GraphicController extends javax.swing.JFrame {
 					TableModel victimQueueTableModel = 
 							new DefaultTableModel(
 									rows,
-									new String[] { "Column 1"});
+									new String[] { "Victims"});
 					victimQueueTable = new JTable();
 					backdropPane.add(victimQueueTable, JLayeredPane.DEFAULT_LAYER);
 					victimQueueTable.setRowHeight(16);
 					victimQueueTable.setModel(victimQueueTableModel);
 					victimQueueTable.setBounds(701, 25, 75, 480);
+					victimQueueTable.setEnabled(false);
 				}
 				{
 					// Panel that holds Process and Reference and TLB
@@ -164,6 +171,7 @@ public class GraphicController extends javax.swing.JFrame {
 						processInfo.setToolTipText("The current process in use.");
 						processInfo.setBounds(13, 25, 72, 18);
 						processInfo.setPreferredSize(new java.awt.Dimension(89, 18));
+						processInfo.setEditable(false);
 						processInfo.setText("process");
 					}
 					{
@@ -176,6 +184,7 @@ public class GraphicController extends javax.swing.JFrame {
 						referencePanel.setBorder(BorderFactory.createTitledBorder(""));
 						referencePanel.setBounds(13, 25, 72, 18);
 						referencePanel.setPreferredSize(new java.awt.Dimension(94, 18));
+						referencePanel.setEditable(false);
 						referencePanel.setText("reference");
 					}
 					{
@@ -187,16 +196,22 @@ public class GraphicController extends javax.swing.JFrame {
 						TLB.setModel(model);
 						TLB.setBounds(288, 232, 109, 80);
 						TLB.setToolTipText("This is the Translation Look-Aside Buffer.");
+						TLB.setEnabled(false);
 					}
 				}
 				{
 					// Page Table Table
 					pageTable = new JTable();
+					String[] names = new String[10];
+					Integer[][] values = new Integer[5][10];
+					TableModel model = new DefaultTableModel(values, names);
+					pageTable.setModel(model);
 					backdropPane.add(pageTable, JLayeredPane.DEFAULT_LAYER);
 					pageTable.setBounds(317, 58, 163, 175);
 					pageTable.setBorder(BorderFactory.createTitledBorder(""));
 					pageTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 					pageTable.setToolTipText("This is the Page Table");
+					pageTable.setEnabled(false);
 				}
 				{
 					// Console Output
@@ -230,30 +245,43 @@ public class GraphicController extends javax.swing.JFrame {
 	 * Update Table Methods
 	 */
 	public void updatePageTable(Page[][] table) {
-		String[] names = new String[table[0].length];
-		Integer[][] values = new Integer[table.length][table[0].length];
+		
 		for (int i=0; i<table.length; i++) {
 			for (int j=0; j<table[i].length; j++) {
-				try {
-					values[i][j] = table[i][j].getMemIndex();
-					//pageTable.setValueAt(table[i][j].getMemIndex(), i, j);
-				} catch (Exception e) {
+				//try {
+					if (table[i][j]!=null && table[i][j].isValid()) {
+						pageTable.setValueAt(table[i][j].getMemIndex(), i, j);
+						pageTable.getColumnModel().getColumn(j).setCellRenderer(new CustomRenderer(true, i));
+					}
+					else if (table[i][j]!=null && !table[i][j].isValid()) {
+						pageTable.setValueAt(table[i][j].getMemIndex(), i, j);
+						pageTable.getColumnModel().getColumn(j).setCellRenderer(new CustomRenderer(false, i));
+					}
+		/*		} catch (Exception e) {
 					//Space in table not taken yet
-				}
+				}*/
+					//pageTable.getColumnModel().getColumn(0).setCellRenderer(new CustomRenderer(true, i));
 			}
+			
 		}
-		
-		TableModel model = new DefaultTableModel(values, names);
-		pageTable.setModel(model);
 	}
 	
 	
-	public void updateTLB(int page, int row) {
-		try {
+	public void updateTLB(Page[] pages) {
+		for (int i=0; i<5; i++) 
+			if (pages[i]!=null && pages[i].isValid()) {
+				TLB.setValueAt(pages[i].getMemIndex(), i, 0);
+				TLB.getColumnModel().getColumn(0).setCellRenderer(new CustomRenderer(true, i));
+			}
+			else if (pages[i]!=null && !pages[i].isValid()) {
+				TLB.setValueAt(pages[i].getMemIndex(), i, 0);
+				TLB.getColumnModel().getColumn(0).setCellRenderer(new CustomRenderer(false, i));
+			}
+		/*try {
 			TLB.setValueAt(page, row, 0);	
 		} catch (Exception e) {
 			//Space in table not taken yet
-		}
+		}*/
 	}
 	
 	private void updateMainMemory(Frame[] main) {
@@ -269,18 +297,25 @@ public class GraphicController extends javax.swing.JFrame {
 	}
 	
 	private void updateVictimQueue(Page[] queue) {
+		
 		for (int i=0; i<queue.length; i++)
-			if (queue[i]!=null)
+			if (queue[i]!=null && queue[i].isValid()) {
 				victimQueueTable.setValueAt(queue[i].getMemIndex(), i, 0);
+				victimQueueTable.getColumnModel().getColumn(0).setCellRenderer(new CustomRenderer(true, i));
+			}
+			else if (queue[i]!=null && !queue[i].isValid()) {
+				victimQueueTable.setValueAt(queue[i].getMemIndex(), i, 0);
+				victimQueueTable.getColumnModel().getColumn(0).setCellRenderer(new CustomRenderer(false, i));
+			}
 	}
 	
 	/*
 	 * Invoke Methods
 	 */
-	public void invokeUpdateTLB(final int page, final int row) {
+	public void invokeUpdateTLB(final Page[] pages) {
 	    SwingUtilities.invokeLater(new Runnable() {
 	        public void run() {
-	            updateTLB(page, row);
+	            updateTLB(pages);
 	        }
 	    }); 
 	}
@@ -292,6 +327,7 @@ public class GraphicController extends javax.swing.JFrame {
 	        }
 	    }); 
 	}
+	
 	public void invokeUpdateVirtualMemory(final Frame[] virt) {
 	    SwingUtilities.invokeLater(new Runnable() {
 	        public void run() {
@@ -316,3 +352,59 @@ public class GraphicController extends javax.swing.JFrame {
 	    }); 
 	}
 }
+
+/**
+ * Custom Class that colors cells based on content
+ * @author Jessel
+ *
+ */
+class CustomRenderer extends DefaultTableCellRenderer {
+	//private static final long serialVersionUID = 6703872492730589499L;
+	private boolean isValid;
+	private int cellRow;
+
+    public CustomRenderer(boolean isValid, int row) {
+		this.isValid = isValid;
+		this.cellRow = row;
+	}
+
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
+    {
+        Component cellComponent = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+       // if(table.getValueAt(row, column))
+
+        if(isValid && cellRow==row){
+            cellComponent.setBackground(Color.GREEN.brighter());
+        } else if (!isValid && cellRow==row) {
+            cellComponent.setBackground(Color.RED);
+        } else if (value==null)
+        	cellComponent.setBackground(Color.WHITE);
+        else
+        	cellComponent.setBackground(Color.GREEN);
+        return cellComponent;
+    }
+}
+
+/*class PageTableModel extends AbstractTableModel {
+
+	public int getRowCount() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public Class getColumnClass(int c) {
+		return getValueAt(0, c).getClass();
+	}
+
+	public Object getValueAt(int rowIndex, int columnIndex) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public int getColumnCount() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
+}*/
