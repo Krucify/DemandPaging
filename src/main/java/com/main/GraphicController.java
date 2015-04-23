@@ -1,219 +1,430 @@
 package com.main;
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
-import java.applet.Applet;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.font.FontRenderContext;
-import java.awt.geom.Rectangle2D;
-import java.awt.image.*;
-import java.io.*;
-import java.net.URL;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JDesktopPane;
+import javax.swing.JInternalFrame;
+import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSlider;
+import javax.swing.JSplitPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.JTextPane;
+import javax.swing.WindowConstants;
+import javax.swing.border.BevelBorder;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableModel;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultCaret;
+import javax.swing.SwingUtilities;
 
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import javax.swing.event.*;
+import com.utility.Frame;
+import com.utility.Page;
 
-public class GraphicController extends JApplet implements ChangeListener {
-	
-	public GraphicController() { }
-	
-	public void stateChanged(ChangeEvent e) { }
-	/*
-	Painter painter;
-	
-	public GraphicController()
+
+/**
+* This code was edited or generated using CloudGarden's Jigloo
+* SWT/Swing GUI Builder, which is free for non-commercial
+* use. If Jigloo is being used commercially (ie, by a corporation,
+* company or business for any purpose whatever) then you
+* should purchase a license for each developer using Jigloo.
+* Please visit www.cloudgarden.com for details.
+* Use of Jigloo implies acceptance of these licensing terms.
+* A COMMERCIAL LICENSE HAS NOT BEEN PURCHASED FOR
+* THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED
+* LEGALLY FOR ANY CORPORATE OR COMMERCIAL PURPOSE.
+*/
+public class GraphicController extends javax.swing.JFrame {
+
 	{
-		JFrame f = new JFrame("Demand Paging");
-        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        
-        JApplet ap = new GraphicController();
-        ap.init();
-        ap.start();
-        f.add("Center", ap);
-        f.pack();
-        f.setVisible(true);
+		//Set Look & Feel
+		try {
+			javax.swing.UIManager.setLookAndFeel("com.jgoodies.looks.plastic.Plastic3DLookAndFeel");
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private JSlider delaySlider;
+	private JScrollPane jScrollPane1;
+	private JTable pageTable;
+	private JScrollPane virtMemScrollPane;
+	private JTable virtualMemory;
+	private JTable mainMemory;
+	private JTable TLB;
+	private JDesktopPane backdropPane;
+	private JTextPane processInfo;
+	private JTable victimQueueTable;
+	private JTextArea consoleArea;
+	private JPanel CPUContainer;
+	private JTextPane referencePanel;
+
+	/**
+	* Auto-generated main method to display this JFrame
+	*/
+	public  void start() {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				GraphicController inst = new GraphicController();
+				inst.setLocationRelativeTo(null);
+				inst.setVisible(true);
+			}
+		});
 	}
 	
-	private BufferedImage loadImage(String name) {
-        String imgFileName = "images/weather-"+name+".png";
-        URL url = GraphicController.class.getResource(imgFileName);
-        BufferedImage img = null;
-        try {
-            img =  ImageIO.read(url);
-        } catch (Exception e) {
-        }
-        return img;
-    }
+	public GraphicController() {
+		super();
+		initGUI();
+		//start();
+		
+	}
 	
-	public void initComponents() {
-    
-        
-        //setLayout(new BorderLayout());
-        
-        
-        JPanel p = new JPanel();
-        p.add(new JLabel("Temperature:"));
-        JSlider tempSlider = new JSlider(20, 100, 65);
-        tempSlider.setMinorTickSpacing(5);
-        tempSlider.setMajorTickSpacing(20);
-        tempSlider.setPaintTicks(true);
-        tempSlider.setPaintLabels(true);
-        tempSlider.addChangeListener(this);
-        p.add(tempSlider);
-        //add("North", p);
-        
-        painter = new Painter();
-        painter.sun = loadImage("sun");
-        painter.cloud = loadImage("cloud");
-        painter.rain = loadImage("rain");
-        painter.snow = loadImage("snow");
-        painter.setTemperature(65);
-        p.add("Center", painter);
-    }
+	private void initGUI() {
+		try {
+			setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+			getContentPane().setBackground(new java.awt.Color(192,192,192));
+			{
+				// Delay Slider
+				delaySlider = new JSlider();
+				getContentPane().add(delaySlider, BorderLayout.SOUTH);
+				delaySlider.setPreferredSize(new java.awt.Dimension(584, 37));
+				delaySlider.setBorder(BorderFactory.createTitledBorder(""));
+			}
+			{
+				// Backdrop
+				backdropPane = new JDesktopPane();
+				getContentPane().add(backdropPane, BorderLayout.CENTER);
+				backdropPane.setBorder(BorderFactory.createTitledBorder(""));
+				backdropPane.setBackground(new java.awt.Color(211,255,168));
+				{
+					// Main Memory Table
+					String[][] rows = new String[30][];
+					TableModel mainMemoryModel = 
+							new DefaultTableModel(
+									rows,
+									new String[] { "Main"});
+					mainMemory = new JTable();
+					
+					backdropPane.add(mainMemory, JLayeredPane.DEFAULT_LAYER);
+					mainMemory.setModel(mainMemoryModel);
+					mainMemory.setRowHeight(16);
+					mainMemory.setBounds(614, 25, 75, 480);
+					mainMemory.setToolTipText("This is the Main Memory");
+					mainMemory.setEnabled(false);
+				}
+				{
+					// Virtual Memory Table
+					virtMemScrollPane = new JScrollPane();
+					backdropPane.add(virtMemScrollPane, JLayeredPane.DEFAULT_LAYER);
+					virtMemScrollPane.setBounds(498, 25, 100, 16*30);
+					virtMemScrollPane.setToolTipText("Virtual Memory Frames");
+					{
+						String[][] rows = new String[500][];
+						TableModel virtualMemoryModel = 
+								new DefaultTableModel(
+										rows,
+										new String[] { "Virtual"});
+						virtualMemory = new JTable();
+						virtMemScrollPane.setViewportView(virtualMemory);
+						virtualMemory.setModel(virtualMemoryModel);
+						virtualMemory.setRowHeight(16);
+						//virtualMemory.setBounds(100, 25, 75, 11*30);
+						virtualMemory.setToolTipText("This is the Virtual Memory");
+						virtualMemory.setEnabled(false);
+					}
+				}
+				{
+					// Victim Queue Table
+					String[][] rows = new String[30][];
+					TableModel victimQueueTableModel = 
+							new DefaultTableModel(
+									rows,
+									new String[] { "Victims"});
+					victimQueueTable = new JTable();
+					backdropPane.add(victimQueueTable, JLayeredPane.DEFAULT_LAYER);
+					victimQueueTable.setRowHeight(16);
+					victimQueueTable.setModel(victimQueueTableModel);
+					victimQueueTable.setBounds(701, 25, 75, 480);
+					victimQueueTable.setEnabled(false);
+				}
+				{
+					// Panel that holds Process and Reference and TLB
+					CPUContainer = new JPanel();
+					backdropPane.add(CPUContainer, JLayeredPane.DEFAULT_LAYER);
+					CPUContainer.setBounds(13, 25, 228, 181);
+					CPUContainer.setBackground(new java.awt.Color(233,254,226));
+					{
+						// Process text box display
+						processInfo = new JTextPane();
+						CPUContainer.add(processInfo);
+						processInfo.setBackground(new java.awt.Color(201,254,188));
+						processInfo.setBorder(BorderFactory.createTitledBorder(""));
+						processInfo.setFont(Font.getFont(Font.SANS_SERIF));
+						processInfo.setToolTipText("The current process in use.");
+						processInfo.setBounds(13, 25, 72, 18);
+						processInfo.setPreferredSize(new java.awt.Dimension(89, 18));
+						processInfo.setEditable(false);
+						processInfo.setText("process");
+					}
+					{
+						// Reference text box display
+						referencePanel = new JTextPane();
+						CPUContainer.add(referencePanel);
+						//referencePanel.setText(info);
+						referencePanel.setBackground(new java.awt.Color(201,254,188));
+						referencePanel.setToolTipText("The current process in use.");
+						referencePanel.setBorder(BorderFactory.createTitledBorder(""));
+						referencePanel.setBounds(13, 25, 72, 18);
+						referencePanel.setPreferredSize(new java.awt.Dimension(94, 18));
+						referencePanel.setEditable(false);
+						referencePanel.setText("reference");
+					}
+					{
+						// TLB Table
+						TLB = new JTable();
+						CPUContainer.add(TLB);
+						String[] names = new String[1];
+						DefaultTableModel model = new DefaultTableModel(names, 5);
+						TLB.setModel(model);
+						TLB.setBounds(288, 232, 109, 80);
+						TLB.setToolTipText("This is the Translation Look-Aside Buffer.");
+						TLB.setEnabled(false);
+					}
+				}
+				{
+					// Page Table Table
+					pageTable = new JTable();
+					String[] names = new String[10];
+					Integer[][] values = new Integer[5][10];
+					TableModel model = new DefaultTableModel(values, names);
+					pageTable.setModel(model);
+					backdropPane.add(pageTable, JLayeredPane.DEFAULT_LAYER);
+					pageTable.setBounds(317, 58, 163, 175);
+					pageTable.setBorder(BorderFactory.createTitledBorder(""));
+					pageTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+					pageTable.setToolTipText("This is the Page Table");
+					pageTable.setEnabled(false);
+				}
+				{
+					jScrollPane1 = new JScrollPane();
+					backdropPane.add(jScrollPane1, JLayeredPane.DEFAULT_LAYER);
+					jScrollPane1.setBounds(249, 274, 231, 201);
+					{
+						consoleArea = new JTextArea();
+						jScrollPane1.setViewportView(consoleArea);
+						DefaultCaret caret = (DefaultCaret)consoleArea.getCaret();
+						caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+						consoleArea.setText("This is Demand Paging!\n");
+						consoleArea.setBounds(249, 274, 231, 201);
+					}
+				}
+			}
+			pack();
+			setSize(800, 600);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
-	public void stateChanged(ChangeEvent e) {
-		// TODO Auto-generated method stub
-		JSlider slider = (JSlider)e.getSource();
-	    painter.setTemperature(slider.getValue());
+	public int getDelaySlider() {
+		return delaySlider.getValue();
+	}
+	
+	public void setProcessInfo(String info)	{
+		processInfo.setText(info);
+	}
+	
+	public void setReferencePane(String info) {
+		referencePanel.setText(info);
+		//referencePanel.set
+	}
+	
+	/*
+	 * Update Table Methods
+	 */
+	public void updatePageTable(Page[][] table) {
+		
+		for (int i=0; i<table.length; i++) {
+			for (int j=0; j<table[i].length; j++) {
+				//try {
+					if (table[i][j]!=null && table[i][j].isValid()) {
+						pageTable.setValueAt(table[i][j].getMemIndex(), i, j);
+						Color color = getTableCellBackground(pageTable, i, j);
+						pageTable.getColumnModel().getColumn(j).setCellRenderer(new CustomRenderer(true, i, color));
+					}
+					else if (table[i][j]!=null && !table[i][j].isValid()) {
+						pageTable.setValueAt(table[i][j].getMemIndex(), i, j);
+						Color color = getTableCellBackground(pageTable, i, j);
+						pageTable.getColumnModel().getColumn(j).setCellRenderer(new CustomRenderer(false, i, color));
+					}
+		/*		} catch (Exception e) {
+					//Space in table not taken yet
+				}*/
+
+			}
+			
+		}
+	}
+	
+	
+	public void updateTLB(Page[] pages) {
+		for (int i=0; i<5; i++) 
+			if (pages[i]!=null && pages[i].isValid()) {
+				TLB.setValueAt(pages[i].getMemIndex(), i, 0);
+				Color color = getTableCellBackground(TLB, i, 0);
+				TLB.getColumnModel().getColumn(0).setCellRenderer(new CustomRenderer(true, i, color));
+			}
+			else if (pages[i]!=null && !pages[i].isValid()) {
+				TLB.setValueAt(pages[i].getMemIndex(), i, 0);
+				Color color = getTableCellBackground(TLB, i, 0);
+				TLB.getColumnModel().getColumn(0).setCellRenderer(new CustomRenderer(false, i, color));
+			}
+		/*try {
+			TLB.setValueAt(page, row, 0);	
+		} catch (Exception e) {
+			//Space in table not taken yet
+		}*/
+	}
+	
+	private void updateMainMemory(Frame[] main) {
+		for (int i=0; i<main.length; i++) 
+			if (main[i]!=null) 
+				mainMemory.setValueAt(main[i].getValue(), i, 0);
+	}
+	
+	private void updateVirtualMemory(Frame[] virt) {
+	for (int i=0; i<virt.length; i++) 
+		if (virt[i]!=null) 
+			virtualMemory.setValueAt(virt[i].getValue(), i, 0);
+	}
+	
+	private void updateVictimQueue(Page[] queue) {
+		
+		for (int i=0; i<queue.length; i++)
+			if (queue[i]!=null && queue[i].isValid()) {
+				victimQueueTable.setValueAt(queue[i].getMemIndex(), i, 0);
+				Color color = getTableCellBackground(victimQueueTable, i, 0);
+				victimQueueTable.getColumnModel().getColumn(0).setCellRenderer(new CustomRenderer(true, i, color));
+			}
+			else if (queue[i]!=null && !queue[i].isValid()) {
+				victimQueueTable.setValueAt(queue[i].getMemIndex(), i, 0);
+				Color color = getTableCellBackground(victimQueueTable, i, 0);
+				victimQueueTable.getColumnModel().getColumn(0).setCellRenderer(new CustomRenderer(false, i, color));
+				
+			}
+	}
+	
+	private void updateConsole(String line) {
+		//consoleArea.getDocument().insertString(consoleArea.getDocument().getLength(), line + "\n", null);
+		consoleArea.setCaretPosition(consoleArea.getDocument().getLength());
+		consoleArea.append(line + "\n");
+	}
+	
+	public Color getTableCellBackground(JTable table, int row, int col) {
+	    TableCellRenderer renderer = table.getCellRenderer(row, col);
+	    Component component = table.prepareRenderer(renderer, row, col);
+	    return component.getBackground();
+	}
+	
+	/*
+	 * Invoke Methods
+	 */
+	public void invokeUpdateTLB(final Page[] pages) {
+	    SwingUtilities.invokeLater(new Runnable() {
+	        public void run() {
+	            updateTLB(pages);
+	        }
+	    }); 
+	}
+	
+	public void invokeUpdateMainMemory(final Frame[] main) {
+	    SwingUtilities.invokeLater(new Runnable() {
+	        public void run() {
+	            updateMainMemory(main);
+	        }
+	    }); 
+	}
+	
+	public void invokeUpdateVirtualMemory(final Frame[] virt) {
+	    SwingUtilities.invokeLater(new Runnable() {
+	        public void run() {
+	            updateVirtualMemory(virt);
+	        }
+	    }); 
+	}
+	
+	public void invokeUpdatePageTable(final Page[][] table) {
+	    SwingUtilities.invokeLater(new Runnable() {
+	        public void run() {
+	            updatePageTable(table);
+	        }
+	    }); 
+	}
+	
+	public void invokeUpdateVictimQueue(final Page[] queue) {
+	    SwingUtilities.invokeLater(new Runnable() {
+	        public void run() {
+	            updateVictimQueue(queue);
+	        }
+	    }); 
+	}
+	
+	public void invokeUpdateConsole(final String line) {
+	    SwingUtilities.invokeLater(new Runnable() {
+	        public void run() {
+	            updateConsole(line);
+	        }
+	    }); 
 	}
 }
 
-class Painter extends Component {
-    
-    int temperature = 65;
-    
-    String[] conditions = { "Snow", "Rain", "Cloud", "Sun"};
-    BufferedImage snow = null;
-    BufferedImage rain = null;
-    BufferedImage cloud = null;
-    BufferedImage sun = null;
-    Color textColor = Color.yellow;
-    String condStr = "";
-    String feels = "";
-    
-    Composite alpha0 = null, alpha1 = null;
-    BufferedImage img0 = null, img1 = null;
-    
-    void setTemperature(int temp) {
-        temperature = temp;
-        repaint();
+
+/**
+ * Custom Class that colors cells based on content
+ * @author Jessel
+ *
+ */
+class CustomRenderer extends DefaultTableCellRenderer {
+	//private static final long serialVersionUID = 6703872492730589499L;
+	private boolean isValid;
+	private int cellRow;
+	private Color color;
+
+    public CustomRenderer(boolean isValid, int row, Color originalColor) {
+		this.isValid = isValid;
+		this.cellRow = row;
+		this.color = originalColor;
+	}
+
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
+    {
+        Component cellComponent = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+       //PageTableModel model = (PageTableModel) table.getModel();
+
+        if(isValid && cellRow==row){
+            cellComponent.setBackground(Color.GREEN.brighter());
+        } else if (!isValid && cellRow==row) {
+            cellComponent.setBackground(Color.RED);
+            System.out.println(value.toString() + " CHANGED TO RED!");
+        } else if (value==null)
+        	cellComponent.setBackground(Color.WHITE);
+        else
+        	cellComponent.setBackground(color);
+        return cellComponent;
     }
-    
-    public Dimension getPreferredSize(){
-        return new Dimension(450, 125);
-    }
-    
-    void setupText(String s1, String s2) {
-        if (temperature <= 32) {
-            textColor = Color.blue;
-            feels = "Freezing";
-        } else if (temperature <= 50) {
-            textColor = Color.green;
-            feels = "Cold";
-        } else if (temperature <= 65) {
-            textColor = Color.yellow;
-            feels = "Cool";
-        } else if (temperature <= 75) {
-            textColor = Color.orange;
-            feels = "Warm";
-        } else {
-            textColor = Color.red;
-            feels = "Hot";
-        }
-        condStr = s1;
-        if (s2 != null) {
-            condStr += "/" + s2;
-        }
-    }
-    
-    void setupImages(BufferedImage i0) {
-        alpha0 = null;
-        alpha1 = null;
-        img0   = i0;
-        img1   = null;
-    }
-    
-    void setupImages(int min, int max, BufferedImage i0, BufferedImage i1) {
-        float alpha = (max-temperature)/(float)(max-min);
-        alpha0 = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha);
-        alpha1 = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1-alpha);
-        img0 = i0;
-        img1 = i1;
-        
-    }
-    
-    void setupWeatherReport() {
-        if (temperature <= 32) {
-            setupImages(snow);
-            setupText("Snow", null);
-        } else if (temperature <= 40) {
-            setupImages(32, 40, snow, rain);
-            setupText("Snow", "Rain");
-        } else if (temperature <= 50) {
-            setupImages(rain);
-            setupText("Rain", null);
-        } else if (temperature <= 58) {
-            setupImages(50, 58, rain, cloud);
-            setupText("Rain", "Cloud");
-        }  else if (temperature <= 65) {
-            setupImages(cloud);
-            setupText("Cloud", null);
-        }  else if (temperature <= 75) {
-            setupImages(65, 75, cloud, sun);
-            setupText("Cloud", "Sun");
-        } else {
-            setupImages(sun);
-            setupText("Sun", null);
-        }
-    }
-    
-    public void paint(Graphics g) {
-        Graphics2D g2 = (Graphics2D) g;
-        Dimension size = getSize();
-        Composite origComposite;
-        
-        setupWeatherReport();
-        
-        origComposite = g2.getComposite();
-        if (alpha0 != null) g2.setComposite(alpha0);
-        g2.drawImage(img0,
-                0, 0, size.width, size.height,
-                0, 0, img0.getWidth(null), img0.getHeight(null),
-                null);
-        if (img1 != null) {
-            if (alpha1 != null) g2.setComposite(alpha1);
-            g2.drawImage(img1,
-                    0, 0, size.width, size.height,
-                    0, 0, img1.getWidth(null), img1.getHeight(null),
-                    null);
-        }
-        g2.setComposite(origComposite);
-        
-        // Freezing, Cold, Cool, Warm, Hot,
-        // Blue, Green, Yellow, Orange, Red
-        Font font = new Font("Serif", Font.PLAIN, 36);
-        g.setFont(font);
-        
-        String tempString = feels + " " + temperature+"F";
-        FontRenderContext frc = ((Graphics2D)g).getFontRenderContext();
-        Rectangle2D boundsTemp = font.getStringBounds(tempString, frc);
-        Rectangle2D boundsCond = font.getStringBounds(condStr, frc);
-        int wText = Math.max((int)boundsTemp.getWidth(), (int)boundsCond.getWidth());
-        int hText = (int)boundsTemp.getHeight() + (int)boundsCond.getHeight();
-        int rX = (size.width-wText)/2;
-        int rY = (size.height-hText)/2;
-        
-        g.setColor(Color.LIGHT_GRAY);
-        g2.fillRect(rX, rY, wText, hText);
-        
-        g.setColor(textColor);
-        int xTextTemp = rX-(int)boundsTemp.getX();
-        int yTextTemp = rY-(int)boundsTemp.getY();
-        g.drawString(tempString, xTextTemp, yTextTemp);
-        
-        int xTextCond = rX-(int)boundsCond.getX();
-        int yTextCond = rY-(int)boundsCond.getY() + (int)boundsTemp.getHeight();
-        g.drawString(condStr, xTextCond, yTextCond);
-        
-    }*/
 }

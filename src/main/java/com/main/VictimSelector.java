@@ -28,6 +28,7 @@ public class VictimSelector {
 	{
 		removeFromQueue(page);
 		pageQueue.add(page);
+		graphics.invokeUpdateVictimQueue(pageQueue.toArray(new Page[pageQueue.size()]));
 	}
 	
 	public boolean isInQueue(Page page)
