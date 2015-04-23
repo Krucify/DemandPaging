@@ -68,13 +68,12 @@ public class ProcessController {
 			reference = getReference(process);											//Get random reference
 			
 			System.out.println("Got Process: " + process.getId());
-			//graphics.invokeUpdateConsole("Got Process: " + process.getId());
+			graphics.invokeUpdateConsole("Got Process: " + process.getId());
 			graphics.setProcessInfo("Process: " + process.getId());
 			
 			System.out.println("Got Process' reference in Table:  " + reference.getTblIndex() + "; Page: " + reference.getPageIndex());
-			//graphics.invokeUpdateConsole("Got Process' reference in Table:  " + reference.getTblIndex() + "; Page: " + reference.getPageIndex());
+			graphics.invokeUpdateConsole("Got Process' reference in Table:  " + reference.getTblIndex() + "; Page: " + reference.getPageIndex());
 			graphics.setReferencePane(String.valueOf(reference.getTblIndex()) + '-' + String.valueOf(reference.getPageIndex()));
-			//graphics.setProcessInfo("Got reference: " + reference.getTblIndex() + "-" + reference.getPageIndex());
 			
 			if(setReference(reference))													//Test if reference is set, if not, set
 			{
@@ -84,16 +83,19 @@ public class ProcessController {
 				if(TLB.containsKey(demPage))											//Is page in TLB?
 				{
 					System.out.println("Scanning TLB for page.");
+					graphics.invokeUpdateConsole("Scanning TLB for page.");
 					Thread.sleep((long)(200 * delay));
 					if(scanTLB(demPage)) //scanning needs to take time					//Scan TLB, takes time
 					{
 						System.out.println("Found page in TLB");
-						//Need to draw
+						graphics.invokeUpdateConsole("Found page in TLB");
 					} else
 					{
 						System.out.println("Not in TLB, accessing Page Table");
+						graphics.invokeUpdateConsole("Not in TLB, accessing Page Table");
 						Thread.sleep((long)(500 * delay));
 						System.out.println("Got page: " + demPage.getMemIndex());
+						graphics.invokeUpdateConsole("Got page: " + demPage.getMemIndex());
 					}
 					TLB.put(demPage, TLB.get(demPage) + 1);								//Increment usage
 				}
@@ -103,12 +105,15 @@ public class ProcessController {
 				if(isPageFault(demPage))												//Is page in virt mem?
 				{	
 					System.out.println("Page is invalid. Index in Virtual Memory: " + demPage.getMemIndex());
+					graphics.invokeUpdateConsole("Page is invalid. Index in Virtual Memory: " + demPage.getMemIndex());
 					resolvePageFault(demPage);											//Resolve fault. Takes time
 					Thread.sleep((long)(1000 * delay));
 					System.out.println("Victim page found. Fault resolved. Index in Main Memory: " + demPage.getMemIndex());
+					graphics.invokeUpdateConsole("Victim page found. Fault resolved. Index in Main Memory: " + demPage.getMemIndex());
 				}
 				
 				System.out.println("Accessing Memory for reference's value.");
+				graphics.invokeUpdateConsole("Accessing Memory for reference's value.");
 				Thread.sleep((long)(500 * delay));
 				demPage.setDirty(true);													//Set page dirty
 				victim.addToQueue(demPage);												//Set page into current page queue
@@ -116,7 +121,7 @@ public class ProcessController {
 				//Get from memory, draw in memory
 				Frame frame = getFromMain(demPage.getMemIndex());
 				System.out.println("Reference Value: " + reference.getValue() + "; Frame Value: " + frame.getValue() + "\n");
-
+				graphics.invokeUpdateConsole("Reference Value: " + reference.getValue() + "; Frame Value: " + frame.getValue() + "\n");
 				graphics.setReferencePane(String.valueOf(frame.getValue()));
 			} else
 			{
@@ -168,6 +173,7 @@ public class ProcessController {
 				
 				reference.set();
 				System.out.println("Reference set in main memory. Index: " + memIndex);
+				graphics.invokeUpdateConsole("Reference set in main memory. Index: " + memIndex);
 				graphics.invokeUpdateMainMemory(mainMem);
 				return true;
 			} else
@@ -185,6 +191,7 @@ public class ProcessController {
 				
 				reference.set();
 				System.out.println("Reference set in virtual memory. Index: " + memIndex);
+				graphics.invokeUpdateConsole("Reference set in virtual memory. Index: " + memIndex);
 				graphics.invokeUpdateVirtualMemory(virtMem);
 				return true;
 			}
@@ -193,6 +200,7 @@ public class ProcessController {
 			 
 		}
 		System.out.println("Reference is already set in memory.");
+		graphics.invokeUpdateConsole("Reference is already set in memory.");
 		
 		return true;
 	}
