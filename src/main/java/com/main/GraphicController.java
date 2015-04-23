@@ -69,6 +69,7 @@ public class GraphicController extends javax.swing.JFrame {
 	private JLabel mainMemLabel;
 	private JTable pageTable;
 	private JScrollPane virtMemScrollPane;
+	private JScrollPane pageTableScrollPane;
 	private JTable virtualMemory;
 	private JTable mainMemory;
 	private JTable TLB;
@@ -82,24 +83,14 @@ public class GraphicController extends javax.swing.JFrame {
 	/**
 	* Auto-generated main method to display this JFrame
 	*/
-	public  void start() {
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				GraphicController inst = new GraphicController();
-				inst.setLocationRelativeTo(null);
-				inst.setVisible(true);
-			}
-		});
-	}
-	
-	public GraphicController() {
+	public GraphicController(int numProc) {
 		super();
-		initGUI();
+		initGUI(numProc);
 		//start();
 		
 	}
 	
-	private void initGUI() {
+	private void initGUI(int numProc) {
 		try {
 			setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 			getContentPane().setBackground(new java.awt.Color(192,192,192));
@@ -139,7 +130,7 @@ public class GraphicController extends javax.swing.JFrame {
 					virtMemScrollPane.setBounds(58, 33, 100, 480);
 					virtMemScrollPane.setToolTipText("Virtual Memory Frames");
 					{
-						String[][] rows = new String[500][];
+						String[][] rows = new String[numProc*10][];
 						TableModel virtualMemoryModel = 
 								new DefaultTableModel(
 										rows,
@@ -212,19 +203,26 @@ public class GraphicController extends javax.swing.JFrame {
 					}
 				}
 				{
-					// Page Table Table
-					pageTable = new JTable();
-					String[] names = new String[10];
-					Integer[][] values = new Integer[5][10];
-					TableModel model = new DefaultTableModel(values, names);
-					pageTable.setModel(model);
-					backdropPane.add(pageTable, JLayeredPane.DEFAULT_LAYER);
-					pageTable.setRowHeight(32);
-					pageTable.setBounds(230, 169, 320, 160);
-					pageTable.setBorder(BorderFactory.createTitledBorder(""));
-					pageTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-					pageTable.setToolTipText("This is the Page Table");
-					pageTable.setEnabled(false);
+					// Virtual Memory Table
+					pageTableScrollPane = new JScrollPane();
+					backdropPane.add(pageTableScrollPane, JLayeredPane.DEFAULT_LAYER);
+					pageTableScrollPane.setBounds(230, 169, 320, 160);
+					pageTableScrollPane.setToolTipText("Page Table"); {
+						// Page Table Table
+						pageTable = new JTable();
+						String[] names = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+						Integer[][] values = new Integer[numProc][10];
+						TableModel model = new DefaultTableModel(values, names);
+						pageTable.setModel(model);
+						//backdropPane.add(pageTable, JLayeredPane.DEFAULT_LAYER);
+						pageTableScrollPane.setViewportView(pageTable);
+						pageTable.setRowHeight(32);
+						//pageTable.setBounds(230, 169, 320, 160);
+						//pageTable.setBorder(BorderFactory.createTitledBorder(""));
+						pageTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+						pageTable.setToolTipText("This is the Page Table");
+						pageTable.setEnabled(false);
+					}
 				}
 				{
 					mainMemLabel = new JLabel();
