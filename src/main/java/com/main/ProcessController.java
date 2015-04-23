@@ -68,8 +68,11 @@ public class ProcessController {
 			reference = getReference(process);											//Get random reference
 			
 			System.out.println("Got Process: " + process.getId());
+			//graphics.invokeUpdateConsole("Got Process: " + process.getId());
 			graphics.setProcessInfo("Process: " + process.getId());
+			
 			System.out.println("Got Process' reference in Table:  " + reference.getTblIndex() + "; Page: " + reference.getPageIndex());
+			//graphics.invokeUpdateConsole("Got Process' reference in Table:  " + reference.getTblIndex() + "; Page: " + reference.getPageIndex());
 			graphics.setReferencePane(String.valueOf(reference.getTblIndex()) + '-' + String.valueOf(reference.getPageIndex()));
 			//graphics.setProcessInfo("Got reference: " + reference.getTblIndex() + "-" + reference.getPageIndex());
 			
@@ -99,10 +102,10 @@ public class ProcessController {
 					
 				if(isPageFault(demPage))												//Is page in virt mem?
 				{	
-					System.out.println("Page is invalid: Fault for Page: " + demPage.getMemIndex());
+					System.out.println("Page is invalid. Index in Virtual Memory: " + demPage.getMemIndex());
 					resolvePageFault(demPage);											//Resolve fault. Takes time
 					Thread.sleep((long)(1000 * delay));
-					System.out.println("Victim page found. Fault resolved for Page: " + demPage.getMemIndex());
+					System.out.println("Victim page found. Fault resolved. Index in Main Memory: " + demPage.getMemIndex());
 				}
 				
 				System.out.println("Accessing Memory for reference's value.");
@@ -161,6 +164,7 @@ public class ProcessController {
 				
 				page = new Page(memIndex, false);
 				pageTbl[reference.getTblIndex()][reference.getPageIndex()] = page;
+				graphics.invokeUpdatePageTable(pageTbl);
 				
 				reference.set();
 				System.out.println("Reference set in main memory. Index: " + memIndex);
@@ -177,9 +181,10 @@ public class ProcessController {
 				
 				page = new Page(memIndex, true);
 				pageTbl[reference.getTblIndex()][reference.getPageIndex()] = page;
+				graphics.invokeUpdatePageTable(pageTbl);
 				
 				reference.set();
-				System.out.println("Reference set in virtual memory. Index:" + memIndex);
+				System.out.println("Reference set in virtual memory. Index: " + memIndex);
 				graphics.invokeUpdateVirtualMemory(virtMem);
 				return true;
 			}
@@ -239,7 +244,9 @@ public class ProcessController {
 		
 		mainMem[mainMemLoc] = dem;			//Swap frames
 		virtMem[virtMemLoc] = vic;
-		//draw all of this
+
+		graphics.invokeUpdateMainMemory(mainMem);
+		graphics.invokeUpdateVirtualMemory(virtMem);
 		
 		vicPage.setDirty(false);			//Adjust page values.
 		vicPage.setValid(false);

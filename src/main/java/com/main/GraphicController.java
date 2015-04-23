@@ -5,7 +5,9 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -18,13 +20,17 @@ import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.WindowConstants;
 import javax.swing.border.BevelBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultCaret;
 import javax.swing.SwingUtilities;
 
 import com.utility.Frame;
@@ -55,6 +61,7 @@ public class GraphicController extends javax.swing.JFrame {
 	}
 
 	private JSlider delaySlider;
+	private JScrollPane jScrollPane1;
 	private JTable pageTable;
 	private JScrollPane virtMemScrollPane;
 	private JTable virtualMemory;
@@ -63,7 +70,7 @@ public class GraphicController extends javax.swing.JFrame {
 	private JDesktopPane backdropPane;
 	private JTextPane processInfo;
 	private JTable victimQueueTable;
-	private JTextPane consolePane;
+	private JTextArea consoleArea;
 	private JPanel CPUContainer;
 	private JTextPane referencePanel;
 
@@ -214,11 +221,17 @@ public class GraphicController extends javax.swing.JFrame {
 					pageTable.setEnabled(false);
 				}
 				{
-					// Console Output
-					consolePane = new JTextPane();
-					backdropPane.add(consolePane, JLayeredPane.DEFAULT_LAYER);
-					consolePane.setText("console");
-					consolePane.setBounds(317, 270, 148, 201);
+					jScrollPane1 = new JScrollPane();
+					backdropPane.add(jScrollPane1, JLayeredPane.DEFAULT_LAYER);
+					jScrollPane1.setBounds(249, 274, 231, 201);
+					{
+						consoleArea = new JTextArea();
+						jScrollPane1.setViewportView(consoleArea);
+						DefaultCaret caret = (DefaultCaret)consoleArea.getCaret();
+						caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+						consoleArea.setText("This is Demand Paging!\n");
+						consoleArea.setBounds(249, 274, 231, 201);
+					}
 				}
 			}
 			pack();
@@ -251,16 +264,18 @@ public class GraphicController extends javax.swing.JFrame {
 				//try {
 					if (table[i][j]!=null && table[i][j].isValid()) {
 						pageTable.setValueAt(table[i][j].getMemIndex(), i, j);
-						pageTable.getColumnModel().getColumn(j).setCellRenderer(new CustomRenderer(true, i));
+						Color color = getTableCellBackground(pageTable, i, j);
+						pageTable.getColumnModel().getColumn(j).setCellRenderer(new CustomRenderer(true, i, color));
 					}
 					else if (table[i][j]!=null && !table[i][j].isValid()) {
 						pageTable.setValueAt(table[i][j].getMemIndex(), i, j);
-						pageTable.getColumnModel().getColumn(j).setCellRenderer(new CustomRenderer(false, i));
+						Color color = getTableCellBackground(pageTable, i, j);
+						pageTable.getColumnModel().getColumn(j).setCellRenderer(new CustomRenderer(false, i, color));
 					}
 		/*		} catch (Exception e) {
 					//Space in table not taken yet
 				}*/
-					//pageTable.getColumnModel().getColumn(0).setCellRenderer(new CustomRenderer(true, i));
+
 			}
 			
 		}
@@ -271,11 +286,13 @@ public class GraphicController extends javax.swing.JFrame {
 		for (int i=0; i<5; i++) 
 			if (pages[i]!=null && pages[i].isValid()) {
 				TLB.setValueAt(pages[i].getMemIndex(), i, 0);
-				TLB.getColumnModel().getColumn(0).setCellRenderer(new CustomRenderer(true, i));
+				Color color = getTableCellBackground(TLB, i, 0);
+				TLB.getColumnModel().getColumn(0).setCellRenderer(new CustomRenderer(true, i, color));
 			}
 			else if (pages[i]!=null && !pages[i].isValid()) {
 				TLB.setValueAt(pages[i].getMemIndex(), i, 0);
-				TLB.getColumnModel().getColumn(0).setCellRenderer(new CustomRenderer(false, i));
+				Color color = getTableCellBackground(TLB, i, 0);
+				TLB.getColumnModel().getColumn(0).setCellRenderer(new CustomRenderer(false, i, color));
 			}
 		/*try {
 			TLB.setValueAt(page, row, 0);	
@@ -301,12 +318,27 @@ public class GraphicController extends javax.swing.JFrame {
 		for (int i=0; i<queue.length; i++)
 			if (queue[i]!=null && queue[i].isValid()) {
 				victimQueueTable.setValueAt(queue[i].getMemIndex(), i, 0);
-				victimQueueTable.getColumnModel().getColumn(0).setCellRenderer(new CustomRenderer(true, i));
+				Color color = getTableCellBackground(victimQueueTable, i, 0);
+				victimQueueTable.getColumnModel().getColumn(0).setCellRenderer(new CustomRenderer(true, i, color));
 			}
 			else if (queue[i]!=null && !queue[i].isValid()) {
 				victimQueueTable.setValueAt(queue[i].getMemIndex(), i, 0);
-				victimQueueTable.getColumnModel().getColumn(0).setCellRenderer(new CustomRenderer(false, i));
+				Color color = getTableCellBackground(victimQueueTable, i, 0);
+				victimQueueTable.getColumnModel().getColumn(0).setCellRenderer(new CustomRenderer(false, i, color));
+				
 			}
+	}
+	
+	private void updateConsole(String line) {
+		//consoleArea.getDocument().insertString(consoleArea.getDocument().getLength(), line + "\n", null);
+		consoleArea.setCaretPosition(consoleArea.getDocument().getLength());
+		consoleArea.append(line + "\n");
+	}
+	
+	public Color getTableCellBackground(JTable table, int row, int col) {
+	    TableCellRenderer renderer = table.getCellRenderer(row, col);
+	    Component component = table.prepareRenderer(renderer, row, col);
+	    return component.getBackground();
 	}
 	
 	/*
@@ -351,7 +383,16 @@ public class GraphicController extends javax.swing.JFrame {
 	        }
 	    }); 
 	}
+	
+	public void invokeUpdateConsole(final String line) {
+	    SwingUtilities.invokeLater(new Runnable() {
+	        public void run() {
+	            updateConsole(line);
+	        }
+	    }); 
+	}
 }
+
 
 /**
  * Custom Class that colors cells based on content
@@ -362,49 +403,28 @@ class CustomRenderer extends DefaultTableCellRenderer {
 	//private static final long serialVersionUID = 6703872492730589499L;
 	private boolean isValid;
 	private int cellRow;
+	private Color color;
 
-    public CustomRenderer(boolean isValid, int row) {
+    public CustomRenderer(boolean isValid, int row, Color originalColor) {
 		this.isValid = isValid;
 		this.cellRow = row;
+		this.color = originalColor;
 	}
 
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
     {
         Component cellComponent = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-
-       // if(table.getValueAt(row, column))
+       //PageTableModel model = (PageTableModel) table.getModel();
 
         if(isValid && cellRow==row){
             cellComponent.setBackground(Color.GREEN.brighter());
         } else if (!isValid && cellRow==row) {
             cellComponent.setBackground(Color.RED);
+            System.out.println(value.toString() + " CHANGED TO RED!");
         } else if (value==null)
         	cellComponent.setBackground(Color.WHITE);
         else
-        	cellComponent.setBackground(Color.GREEN);
+        	cellComponent.setBackground(color);
         return cellComponent;
     }
 }
-
-/*class PageTableModel extends AbstractTableModel {
-
-	public int getRowCount() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	public Class getColumnClass(int c) {
-		return getValueAt(0, c).getClass();
-	}
-
-	public Object getValueAt(int rowIndex, int columnIndex) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public int getColumnCount() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-	
-}*/
