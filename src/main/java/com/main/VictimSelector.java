@@ -59,10 +59,11 @@ public class VictimSelector {
 		{
 			if(page.isDirty()) 			//If current page is dirty, set clean
 				page.setDirty(false);
-			else if(!vicFound)			//Otherwise if victem is not found, set victem
+			else			//Otherwise if victem is not found, set victem
 			{
 				victim = page;
 				vicFound = true;
+				break;
 			}
 		}
 		if(!vicFound)

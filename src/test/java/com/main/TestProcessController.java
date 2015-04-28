@@ -19,8 +19,12 @@ public class TestProcessController {
 	private Proc p;
 	private Reference ref;
 	private Frame frame;
+	private GraphicController gc;
 	private int id;
 	private int value;
+	private int frameSize;
+	private Page[][] testPageTbl;
+	private Frame[] testFrame;
 	
 	@Before
 	public void setup()
@@ -29,10 +33,16 @@ public class TestProcessController {
 
 		id = 0;
 		value = 43;
-		this.pc = new ProcessController();
+		frameSize = 50;
+		testPageTbl = new Page[5][10];
+		testFrame = new Frame[frameSize];
+		
+		this.gc = createMock("SampleGUI", GraphicController.class);
 		this.p = createMock("SampleProcess", Proc.class);
 		this.ref = createMock("SampleReference", Reference.class);
 		this.frame = createMock("SampleFrame", Frame.class);
+		
+		this.pc = new ProcessController(gc, 5);
 	}
 
 	
@@ -58,7 +68,7 @@ public class TestProcessController {
 	public void testSetReferenceNotSetMainMemNotFull()
 	{
 		expect(ref.isSet()).andReturn(false);
-		expect(ref.getValue()).andStubReturn(1);;
+		expect(ref.getValue()).andStubReturn(1);
 		expect(ref.getTblIndex()).andStubReturn(1);	
 		expect(ref.getPageIndex()).andStubReturn(1);
 		
@@ -114,7 +124,7 @@ public class TestProcessController {
 			pc.addToMainMem(new Frame(4), i);
 		}
 		// Fill Virt Mem
-		for(int i = 0; i < 500; i++)
+		for(int i = 0; i < frameSize; i++)
 		{
 			pc.addToVirtMem(new Frame(4), i);
 		}

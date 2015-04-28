@@ -17,7 +17,7 @@ public class TestVictimSelector {
 	public void setup()
 	{
 		pageTbl = null;
-		GraphicController mockGraphic = new GraphicController(); //make this a mock
+		GraphicController mockGraphic = new GraphicController(5); //make this a mock
 		vs = new VictimSelector(mockGraphic, pageTbl);
 	}
 	

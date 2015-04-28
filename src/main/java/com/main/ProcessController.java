@@ -12,6 +12,8 @@ import java.util.Set;
 import com.utility.*;
 
 public class ProcessController {
+	//INPUT VARIABLES
+	private int virtMemSize;
 
 	private GraphicController graphics;
 	private VictimSelector victim;
@@ -25,29 +27,29 @@ public class ProcessController {
 	
 	public ProcessController()
 	{
-		setup();
+		setup(5);
 	}
 	
-	public ProcessController(GraphicController graphics)
+	public ProcessController(GraphicController graphics, int processes)
 	{
 		this.graphics = graphics;
 		graphics.setVisible(true);
-		setup();
+		setup(processes);
 		graphics.invokeUpdatePageTable(pageTbl);
 	}
 	
-	public void setup()
+	public void setup(int numProc)
 	{
 		this.victim = new VictimSelector(graphics, pageTbl);
 		this.mainMem = new Frame[30];
-		this.virtMem = new Frame[500];
+		this.virtMem = new Frame[numProc*10];
 		this.memFilled = false;
 		this.processes = new ArrayList<Proc>();
-		this.pageTbl = new Page[5][10];
+		this.pageTbl = new Page[numProc][10];
 		this.TLB = new HashMap<Page, Integer>();
 		this.delay = 1;
 		
-		for(int i = 0; i < 5; i++)
+		for(int i = 0; i < numProc; i++)
 		{
 			Proc temp = new Proc(i);
 			processes.add(temp);
