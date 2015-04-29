@@ -7,11 +7,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.main.ProcessController;
-
-import com.utility.Frame;
-import com.utility.Page;
-
 import com.utility.*;
+
 import static org.easymock.EasyMock.*;  
 
 public class TestProcessController {
@@ -37,7 +34,7 @@ public class TestProcessController {
 		testPageTbl = new Page[5][10];
 		testFrame = new Frame[frameSize];
 		
-		this.gc = createMock("SampleGUI", GraphicController.class);
+		this.gc = createNiceMock("SampleGUI", GraphicController.class);
 		this.p = createMock("SampleProcess", Proc.class);
 		this.ref = createMock("SampleReference", Reference.class);
 		this.frame = createMock("SampleFrame", Frame.class);
@@ -164,12 +161,6 @@ public class TestProcessController {
 	}
 	
 	@Test
-	public void testScanTLB()
-	{
-		throw new RuntimeException();
-	}
-	
-	@Test
 	public void testIsPageFaultWhenNot()
 	{
 		Page dummy = EasyMock.createMock("ValidPage", Page.class);
@@ -194,25 +185,6 @@ public class TestProcessController {
 	}
 	
 	@Test
-	public void testIsPageFault()
-	{
-		throw new RuntimeException();
-	}
-	
-	@Test()
-
-	public void testResolvePageFault()
-	{
-		throw new RuntimeException();
-	}
-	
-	@Test
-	public void testMemorySwap()
-	{
-		
-	}
-	
-	@Test
 	public void testIsMainMemoryFull()
 	{
 		boolean testEmpty = pc.isMainMemoryFull();
@@ -233,7 +205,7 @@ public class TestProcessController {
 	{
 		assertFalse(pc.isVirtMemoryFull());
 		
-		for(int i = 0; i < 500; i++)
+		for(int i = 0; i < 50; i++)
 		{
 			pc.addToVirtMem(new Frame(4), i);
 		}
@@ -273,7 +245,7 @@ public class TestProcessController {
 	@Test
 	public void testGetVirtMemSlotWhenFull()
 	{
-		for(int i = 0; i < 500; i++)
+		for(int i = 0; i < 50; i++)
 		{
 			pc.addToVirtMem(new Frame(4), i);
 		}
@@ -329,5 +301,102 @@ public class TestProcessController {
 	public void testGetFromVirtError()
 	{
 		pc.getFromVirt(0);
+	}
+	
+	@Test
+	public void testWork()
+	{		
+		expect(gc.getDelaySlider()).andReturn(10000);
+		replay(gc);
+		
+		try {
+			pc.work(true);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	@Test(expected=RuntimeException.class)
+	public void testWorkWhenMemFull()
+	{
+		for(int i = 0; i < 30; i++)
+			pc.addToMainMem(new Frame(4), i);
+		
+		for(int i = 0; i < 50; i++)
+			pc.addToVirtMem(new Frame(4), i);
+		
+		expect(gc.getDelaySlider()).andReturn(1);
+		replay(gc);
+		
+		try {
+			pc.work(true);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testWorkWhenTLBContainsPage()
+	{		
+		expect(gc.getDelaySlider()).andReturn(10000);
+		replay(gc);
+		
+		pc.setWorkTest(1);
+		
+		try {
+			pc.work(true);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testWorkWhenTLBLacksPage()
+	{		
+		expect(gc.getDelaySlider()).andReturn(10000);
+		replay(gc);
+		
+		pc.setWorkTest(2);
+		
+		try {
+			pc.work(true);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testWorkWhenPageFault()
+	{		
+		expect(gc.getDelaySlider()).andReturn(10000);
+		replay(gc);
+		
+		pc.setWorkTest(3);
+		
+	
+		try {
+			pc.work(true);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testWorkWhenNoFault()
+	{		
+		expect(gc.getDelaySlider()).andReturn(10000);
+		replay(gc);
+		
+		try {
+			pc.work(true);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

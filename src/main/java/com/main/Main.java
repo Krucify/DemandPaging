@@ -25,7 +25,7 @@ public class Main {
 		GraphicController graphController = new GraphicController(numProc);
 		ProcessController procController = new ProcessController(graphController, numProc);
 		try {
-			procController.work();
+			procController.work(false);
 		} catch (InterruptedException e) {
 			System.err.println("FATALITY: error in delay.");
 			e.printStackTrace();

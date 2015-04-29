@@ -24,6 +24,7 @@ public class ProcessController {
 	private List<Proc> processes;
 	private float delay; 
 	private Map<Page, Integer> TLB;
+	private int testVar;
 	
 	public ProcessController()
 	{
@@ -56,18 +57,64 @@ public class ProcessController {
 		}
 	}
 	
-	public void work() throws InterruptedException
+	public void setWorkTest(int test)
 	{
-		Proc process;
-		Reference reference;
-		Page demPage;
+		this.testVar = test;
+	}
+	
+	public void work(boolean debug) throws InterruptedException
+	{
+		Proc process = null;
+		Reference reference = null;
+		Page demPage = null;
 		
-		while(true)																		//Work infinitely
+		do							 													//Work infinitely
 		{
 			setDelay(graphics.getDelaySlider());										//Set delay
-			
-			process = getProcess();														//Get random process
-			reference = getReference(process);											//Get random reference
+			if(!debug)
+			{
+				process = getProcess();														//Get random process
+				reference = getReference(process);											//Get random reference
+			} else
+			{
+				switch(testVar)
+				{
+				case 1:
+					process = processes.get(0);
+					reference = new Reference(0, 0, 100);
+					reference.set();
+					pageTbl[0][0] = new Page(0, false);
+					mainMem[0] = new Frame(100);
+					TLB.put(pageTbl[0][0], 1);
+					break;
+				case 2:
+					process = processes.get(0);
+					reference = new Reference(0, 0, 100);
+					reference.set();
+					pageTbl[0][0] = new Page(0, false);
+					mainMem[0] = new Frame(100);
+					for(int i=0; i<10; i++)
+						TLB.put(new Page(4, false), 5);
+					TLB.put(pageTbl[0][0], 1);
+					break;
+				case 3:
+					process = processes.get(0);
+					reference = new Reference(0, 0, 100);
+					reference.set();
+					Page testPage = new Page(0, true);
+					Page faultPage = new Page(0, false);
+					pageTbl[0][0] = testPage;
+					pageTbl[1][0] = faultPage;
+					victim.addToQueue(faultPage);
+					mainMem[0] = new Frame(100);
+					virtMem[0] = new Frame(500);
+					break;
+				default:
+					process = getProcess();	
+					reference = getReference(process);
+					break;
+				}
+			}
 			
 			System.out.println("Got Process: " + process.getId());
 			graphics.invokeUpdateConsole("Got Process: " + process.getId());
@@ -128,9 +175,9 @@ public class ProcessController {
 			} else
 			{
 				System.err.println("VIRTUAL MEMORY FULL.");
-				System.exit(0);
+				throw new RuntimeException("All Memory Is Full");
 			}
-		}
+		} while(!debug);
 	}
 	
 	public void setDelay(float delay)
