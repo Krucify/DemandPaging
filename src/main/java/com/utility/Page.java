@@ -4,7 +4,6 @@ public class Page {
 	private boolean dirty;
 	private boolean valid;
 	private int memIndex;
-	private int size;
 	
 	public Page(int memIndex, boolean fault)
 	{
@@ -39,8 +38,5 @@ public class Page {
 	}
 	public void setMemIndex(int memIndex) {
 		this.memIndex = memIndex;
-	}
-	public int getSize(){
-		return size;
 	}
 }

@@ -10,7 +10,6 @@ public class Main {
 		int numProc = -1;
 		String input = "";
 		// Ask for Inputs
-		boolean isValid = false;
 		System.out.print("This is Demand Paging. Please enter number of processes: ");
 		Scanner sc = new Scanner(System.in);
 		while(numProc < 0){
